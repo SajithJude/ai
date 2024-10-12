@@ -1,0 +1,7 @@
+Flask 
+openai 
+# sqlite
+google-generativeai
+Pillow
+# python dotenv
+python-dotenv

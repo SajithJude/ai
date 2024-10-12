@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Report Upload</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS and Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <!-- Custom Styles -->
+    <style>
+        .upload-area {
+            border: 2px dashed #6c757d;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+        .upload-area:hover {
+            background-color: #f8f9fa;
+        }
+        .upload-area.dragover {
+            background-color: #e9ecef;
+        }
+        .upload-icon {
+            font-size: 50px;
+            color: #6c757d;
+        }
+        .upload-text {
+            font-size: 18px;
+            color: #6c757d;
+        }
+        .file-details {
+            margin-top: 15px;
+            text-align: left;
+        }
+        .file-details ul {
+            list-style: none;
+            padding: 0;
+        }
+        .file-details li {
+            font-size: 14px;
+            color: #212529;
+        }
+        /* Loading Modal Styles */
+        .modal-content {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
+        .loading-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .loading-progress {
+            height: 100%;
+            width: 0;
+            background-color: #0d6efd;
+            animation: loadingAnimation 8s linear forwards;
+        }
+        @keyframes loadingAnimation {
+            0% { width: 0%; }
+            50% { width: 50%; }
+            100% { width: 100%; }
+        }
+        .loading-text {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #212529;
+            text-align: center;
+        }
+        /* Mobile responsiveness */
+        @media (max-width: 576px) {
+            .upload-icon {
+                font-size: 40px;
+            }
+            .upload-text {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Upload Home Reports</h1>
+    <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+        <div class="upload-area mb-3" id="uploadArea">
+            <div id="uploadPrompt">
+                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                <p class="upload-text">Drag & Drop files here or click to upload</p>
+            </div>
+            <div class="file-details d-none" id="fileDetails">
+                <p><strong id="fileCount"></strong></p>
+                <ul id="fileList"></ul>
+            </div>
+        </div>
+        <input type="file" name="file" id="fileInput" class="d-none" multiple>
+
+        <button type="submit" class="btn btn-primary w-100">Upload Files</button>
+    </form>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="loading-bar">
+                    <div class="loading-progress" id="loadingProgress"></div>
+                </div>
+                <p class="loading-text" id="loadingText">Uploading files...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies (Popper.js and Bootstrap JS) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom Script -->
+<script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileDetails = document.getElementById('fileDetails');
+    const fileCount = document.getElementById('fileCount');
+    const fileList = document.getElementById('fileList');
+    const uploadForm = document.getElementById('uploadForm');
+    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    const loadingText = document.getElementById('loadingText');
+    const loadingProgress = document.getElementById('loadingProgress');
+
+    // Handle click to trigger file input
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // Handle drag events
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.classList.remove('dragover');
+        }, false);
+    });
+
+    // Handle drop event
+    uploadArea.addEventListener('drop', (e) => {
+        fileInput.files = e.dataTransfer.files;
+        displayFileDetails();
+    });
+
+    // Handle file selection
+    fileInput.addEventListener('change', displayFileDetails);
+
+    function displayFileDetails() {
+        const files = fileInput.files;
+        if (files.length > 0) {
+            fileDetails.classList.remove('d-none');
+            fileCount.textContent = `${files.length} file(s) selected:`;
+            fileList.innerHTML = '';
+            for (let i = 0; i < files.length; i++) {
+                const listItem = document.createElement('li');
+                listItem.textContent = files[i].name;
+                fileList.appendChild(listItem);
+            }
+            // Hide the prompt
+            document.getElementById('uploadPrompt').classList.add('d-none');
+        } else {
+            fileDetails.classList.add('d-none');
+            document.getElementById('uploadPrompt').classList.remove('d-none');
+        }
+    }
+
+    // Handle form submission
+    uploadForm.addEventListener('submit', (e) => {
+        e.preventDefault(); // Prevent actual form submission
+        // Show loading modal
+        loadingModal.show();
+
+        // Simulate file upload and analysis
+        let loadingPhase = 'uploading';
+        loadingText.textContent = 'Uploading files...';
+
+        // After 4 seconds, change text to 'Analyzing...'
+        setTimeout(() => {
+            loadingPhase = 'analyzing';
+            loadingText.textContent = 'Analyzing...';
+        }, 2000);
+
+        // Simulate total loading time (e.g., 8 seconds)
+        setTimeout(() => {
+            // Hide loading modal and submit the form
+            loadingModal.hide();
+            uploadForm.submit();
+        }, 2000);
+    });
+</script>
+</body>
+</html>
