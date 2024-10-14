@@ -3,6 +3,8 @@ openai
 # sqlite
 google-generativeai
 Pillow
-# python dotenv
+# python doten
+flask_sqlalchemy
 python-dotenv
-Gunicorn
+# Gunicorn
+llama_index
