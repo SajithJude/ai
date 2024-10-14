@@ -6,5 +6,5 @@ Pillow
 # python doten
 flask_sqlalchemy
 python-dotenv
-# Gunicorn
+Gunicorn
 llama_index
